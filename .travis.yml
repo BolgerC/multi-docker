@@ -1,0 +1,19 @@
+sudo: required
+services:
+        - docker
+before_install:
+        - docker build -t carlbolger/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+        - docker run carlbolger/react-test npm test -- --coverage
+
+after_success:
+        - docker build -t carlbolger/multi-client ./client
+        - docker build -t carlbolger/multi-server ./server
+        - docker build -t carlbolger/multi-nginx ./nginx
+        - docker build -t carlbolger/multi-worker ./worker
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+        - docker push carlbolger/multi-client
+        - docker push carlbolger/multi-server
+        - docker push carlbolger/multi-nginx
+        - docker push carlbolger/multi-worker
